@@ -95,5 +95,9 @@ This project provides an interactive bash script for creating and configuring cu
 ## Contribute
 
 We welcome contributions! Feel free to open a pull request or create issues for improvements and suggestions.
+
+## Linkedin article
+ita: https://www.linkedin.com/pulse/script-bash-interattivo-per-la-creazione-di-ssl-vincenzo-di-franco-bl4zf
+eng: https://www.linkedin.com/pulse/shell-script-automate-ssl-certificate-creation-vincenzo-di-franco-nrk9f/
 ``` 
 
