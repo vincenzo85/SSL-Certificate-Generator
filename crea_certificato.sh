@@ -26,14 +26,18 @@ msg() {
     fi
 }
 
+# Chiedi il nome base per i certificati
+msg "Inserisci un nome base per i certificati (es: 'miaCA')" "Enter a base name for the certificates (e.g., 'myCA')"
+read -p "> " CERT_NAME
+
 # Variabili iniziali
-CERTS_DIR="$HOME/certs"
-CA_KEY="myCA.key"
-CA_CERT="myCA.pem"
-SERVER_KEY="server.key"
-SERVER_CSR="server.csr"
-SERVER_CERT="server.crt"
-EXT_FILE="server.ext"
+CERTS_DIR="$(pwd)"
+CA_KEY="${CERTS_DIR}/ca_${CERT_NAME}.key"
+CA_CERT="${CERTS_DIR}/ca_${CERT_NAME}.pem"
+SERVER_KEY="${CERTS_DIR}/server_${CERT_NAME}.key"
+SERVER_CSR="${CERTS_DIR}/server_${CERT_NAME}.csr"
+SERVER_CERT="${CERTS_DIR}/server_${CERT_NAME}.crt"
+EXT_FILE="${CERTS_DIR}/server_${CERT_NAME}.ext"
 
 # Chiedi all'utente il dominio
 if [ "$LANGUAGE" == "1" ]; then
@@ -91,7 +95,7 @@ openssl req -x509 -new -nodes -key "$CA_KEY" -sha256 -days 1825 -out "$CA_CERT"
 
 # Copia del certificato CA nella store dei certificati di sistema
 msg "Aggiunta del certificato CA alla store dei certificati di sistema..." "Adding the CA certificate to the system's trusted store..."
-cp "$CA_CERT" /usr/local/share/ca-certificates/myCA.crt
+cp "$CA_CERT" /usr/local/share/ca-certificates/${CERT_NAME}_CA.crt
 update-ca-certificates
 
 # Generazione della chiave privata per il server
@@ -134,8 +138,8 @@ if [[ "$CONFIGURE_SERVER" =~ ^[sSyY]$ ]]; then
     DocumentRoot /var/www/html
 
     SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/$SERVER_CERT
-    SSLCertificateKeyFile /etc/ssl/private/$SERVER_KEY
+    SSLCertificateFile /etc/ssl/certs/${CERT_NAME}_server.crt
+    SSLCertificateKeyFile /etc/ssl/private/${CERT_NAME}_server.key
 
     <Directory /var/www/html>
         Options Indexes FollowSymLinks
@@ -156,8 +160,8 @@ server {
     listen 443 ssl;
     server_name $DOMAIN;
 
-    ssl_certificate     /etc/ssl/certs/$SERVER_CERT;
-    ssl_certificate_key /etc/ssl/private/$SERVER_KEY;
+    ssl_certificate     /etc/ssl/certs/${CERT_NAME}_server.crt;
+    ssl_certificate_key /etc/ssl/private/${CERT_NAME}_server.key;
 
     root /var/www/html;
 
@@ -177,7 +181,7 @@ fi
 
 # Aggiunta del certificato del server alla store dei certificati di sistema
 msg "Aggiunta del certificato del server alla store dei certificati di sistema..." "Adding the server certificate to the system's trusted store..."
-cp /etc/ssl/certs/"$SERVER_CERT" /usr/local/share/ca-certificates/"$SERVER_CERT"
+cp "$SERVER_CERT" /usr/local/share/ca-certificates/${CERT_NAME}_server.crt
 update-ca-certificates
 
 msg "Operazione completata. Il certificato SSL per $DOMAIN è stato creato." "Operation completed. The SSL certificate for $DOMAIN has been created."
